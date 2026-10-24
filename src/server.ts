@@ -26,7 +26,7 @@ export function buildServer() {
         },
         async ({ name, folders, body }) => {
             const note = toNote(name, folders, body);
-            const response = createNote(note);
+            const response = await createNote(note);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]
@@ -45,7 +45,7 @@ export function buildServer() {
         },
         async ({ name, folders }) => {
             const note = toNote(name, folders);
-            const response = readNote(note);
+            const response = await readNote(note);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]
@@ -62,7 +62,7 @@ export function buildServer() {
             },
         },
         async ({ folders }) => {
-            const response = readFolder(folders);
+            const response = await readFolder(folders);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]
@@ -82,7 +82,7 @@ export function buildServer() {
         },
         async ({ name, folders, body }) => {
             const note = toNote(name, folders, body);
-            const response = editNote(note);
+            const response = await editNote(note);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]
@@ -101,7 +101,7 @@ export function buildServer() {
         },
         async ({ name, folders }) => {
             const note = toNote(name, folders);
-            const response = deleteNote(note);
+            const response = await deleteNote(note);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]

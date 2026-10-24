@@ -1,16 +1,32 @@
 # notemcp
 
-A small [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets an MCP client such as Claude look up manage notes.
+A small [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets an MCP client such as Claude create, read, edit and delete notes.
 
 It runs over stdio or Streamable HTTP and is written in TypeScript.
 
 ## Tools
 
-Section to be added
+Notes are stored as JSON files (`{ name, folders, writtenAt, body }`) under a base directory, organised in nested folders. Names and folder names are sanitised to letters, digits, `_` and `-` and truncated to 50 characters.
+
+| Tool | Inputs | Description |
+| --- | --- | --- |
+| `create_note` | `name`, `folders`, `body` | Create a new note, creating the folders if needed. |
+| `read_note` | `name`, `folders` | Read an existing note. |
+| `read_folder` | `folders` | List the subfolders and notes in a folder. |
+| `edit_note` | `name`, `folders`, `body` | Replace the body of an existing note. |
+| `delete_note` | `name`, `folders` | Delete an existing note. |
+
+`folders` is a path of up to 5 folder names; each entry is nested in the previous one. Use an empty list for the root.
+
+Not implemented yet: moving, renaming and archiving notes.
+
+### Storage location
+
+The base directory is hard-coded as `BASE_PATH` in [src/note.ts](src/note.ts). Change it to where you want your notes stored, then rebuild.
 
 ## Requirements
 
-- Node.js 18 or newer (uses the built-in `fetch`)
+- Node.js 18 or newer
 - npm
 
 ## Setup
@@ -35,7 +51,7 @@ Add it to `claude_desktop_config.json`:
   "mcpServers": {
     "notes": {
       "command": "node",
-      "args": ["/absolute/path/to/jishomcp/build/index.js"]
+      "args": ["/absolute/path/to/notemcp/build/index.js"]
     }
   }
 }
@@ -70,7 +86,7 @@ PORT=8080 npm run start:http
 The server is stateless: each `POST /notemcp` request gets its own server and transport instance. Connect a client to it, for example:
 
 ```sh
-claude mcp add --transport http jisho http://127.0.0.1:3000/notemcp
+claude mcp add --transport http note http://127.0.0.1:3000/notemcp
 ```
 
 ### MCP Inspector
@@ -86,7 +102,7 @@ src/
   index.ts    # Entry point: connects the server to a stdio transport
   http.ts     # Entry point: serves the MCP server over Streamable HTTP (Express)
   server.ts   # Builds the MCP server and registers the tools
-  jisho.ts    # Jisho API client and response types
+  note.ts     # Note storage: create, read, edit and delete notes as JSON files
 ```
 
 ## Notes

@@ -11,13 +11,12 @@ interface Note {
 }
 
 export function toNote(name: string, folders: string[], body: string = "n/a"): Note {
-    const note: Note = {
+    return {
         name: name,
         folders: folders,
         writtenAt: new Date().toISOString(),
         body: body
     };
-    return note;
 }
 
 export async function createNote(note: Note) {
@@ -38,6 +37,9 @@ export async function readNote(note: Note): Promise<string> {
 }
 
 export async function readFolder(folders: string[]): Promise<string> {
+
+    //todo: 1 remove file extention from note names, 2. add tree support
+
     const path = getPath(folders);
 
     if (!existsSync(path)) {
@@ -117,12 +119,12 @@ function getPath(folders: string[]): string {
 
 function getSafeStrings(strings: string[]): string[] {
     let safe = [];
-    for (const string in strings) {
+    for (const string of strings) {
         safe.push(getSafeString(string));
     }
     return safe;
 }
 
 function getSafeString(string: string): string {
-    return string.replace(/[^\w-]/g, '').slice(0, 50);
+    return string.replace(/[^\w-]/g, "").slice(0, 50);
 }
