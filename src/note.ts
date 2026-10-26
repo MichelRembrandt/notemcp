@@ -102,6 +102,25 @@ export async function deleteNote(note: Note): Promise<string> {
     return "Deleted the following note: " + oldNote;
 }
 
+export async function deleteFolder(folders: string[], recursive: boolean): Promise<string> {
+    if (folders.length === 0) {
+        throw new Error("Provide the folders you want to delete.");
+    }
+
+    const path = getPath(folders);
+
+    if (!existsSync(path)) {
+        throw new Error("Folder not found.");
+    }
+
+    if (!recursive && readdirSync(path).length > 0) {
+        throw new Error("Folder is not empty. Set recursive to true to delete it together with its contents.");
+    }
+
+    rmSync(path, { recursive: true });
+    return "Deleted folder: " + folders.join("/");
+}
+
 function ensureDirExists(folders: string[]) {
     const path = getPath(folders);
     if (!existsSync(path)) mkdirSync(path, { recursive: true });

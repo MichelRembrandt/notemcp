@@ -15,6 +15,7 @@ Notes are stored as JSON files (`{ name, folders, writtenAt, body }`) under a ba
 | `read_folder` | `folders` | List the subfolders and notes in a folder. |
 | `edit_note` | `name`, `folders`, `body` | Replace the body of an existing note. |
 | `delete_note` | `name`, `folders` | Delete an existing note. |
+| `delete_folder` | `folders`, `recursive` | Delete a folder. With `recursive` false it only deletes an empty folder; with true it also deletes everything inside. The root folder cannot be deleted. |
 
 `folders` is a path of up to 5 folder names; each entry is nested in the previous one. Use an empty list for the root.
 

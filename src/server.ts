@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { toNote, createNote, readNote, readFolder, editNote, deleteNote } from './note.js';
+import { toNote, createNote, readNote, readFolder, editNote, deleteNote, deleteFolder } from './note.js';
 
 
 const NAME_DESCRIPTION = "Title of the note";
@@ -102,6 +102,24 @@ export function buildServer() {
         async ({ name, folders }) => {
             const note = toNote(name, folders);
             const response = await deleteNote(note);
+
+            return {
+                content: [{ type: 'text', text: JSON.stringify(response) }]
+            };
+        }
+    );
+
+    server.registerTool(
+        'delete_folder',
+        {
+            title: 'Delete an existing folder',
+            inputSchema: {
+                folders: z.array(z.string().min(1).max(50).describe(FOLDER_DESCRIPTION)).min(1).max(5).describe(FOLDERS_DESCRIPTION),
+                recursive: z.boolean().describe("If true, delete the folder together with all notes and subfolders in it. If false, only delete the folder when it is empty.")
+            },
+        },
+        async ({ folders, recursive }) => {
+            const response = await deleteFolder(folders, recursive);
 
             return {
                 content: [{ type: 'text', text: JSON.stringify(response) }]
