@@ -1,7 +1,11 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
-const BASE_PATH = "/Users/micheldesmet/Documents/Notes"
+if (!process.env.NOTES_DIR) {
+    throw new Error("NOTES_DIR is not set. Copy .env.example to .env and set it.");
+}
+
+const BASE_PATH: string = process.env.NOTES_DIR;
 
 interface Note {
     name: string;
@@ -10,7 +14,7 @@ interface Note {
     body: string;
 }
 
-export function toNote(name: string, folders: string[], body: string = "n/a"): Note {
+export function toNote(name: string, folders: string[], body: string): Note {
     return {
         name: getSafeString(name),
         folders: getSafeStrings(folders),
@@ -21,14 +25,18 @@ export function toNote(name: string, folders: string[], body: string = "n/a"): N
 
 export async function createNote(note: Note) {
     ensureDirExists(note.folders);
-    const filePath = getFilePath(note);
+    const filePath = getFilePath(note.name, note.folders);
+
+    if (existsSync(filePath)) {
+        throw new Error("Note already exists. Use edit_note to change it.");
+    }
     const jsonNote = JSON.stringify(note, null, 2);
     writeFileSync(filePath, jsonNote);
     return "Created note: " + jsonNote;
 }
 
-export async function readNote(note: Note): Promise<string> {
-    const filePath = getFilePath(note); 
+export async function readNote(name: string, folders: string[]): Promise<string> {
+    const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
         throw new Error("Note not found")
@@ -41,6 +49,7 @@ export async function readFolder(folders: string[]): Promise<string> {
     const path = getPath(folders);
 
     if (!existsSync(path)) {
+        if (folders.length === 0) return JSON.stringify({ folders: {}, notes: [] }, null, 2);
         throw new Error("Folder not found.");
     }
 
@@ -59,7 +68,7 @@ function readFolderTree(path: string): FolderTree {
         if (entry.isDirectory()) {
             tree.folders[entry.name] = readFolderTree(join(path, entry.name));
         }
-        if (entry.isFile()) {
+        if (entry.isFile() && entry.name.endsWith(".json")) {
             tree.notes.push(entry.name.replace(/\.json$/, ""));
         }
     }
@@ -68,7 +77,7 @@ function readFolderTree(path: string): FolderTree {
 }
 
 export async function editNote(note: Note): Promise<string> {
-    const filePath = getFilePath(note); 
+    const filePath = getFilePath(note.name, note.folders);
 
     if (!existsSync(filePath)) {
         throw new Error("Note not found. (To change the location of a note use move_note. To change the name of a note use rename_note)");
@@ -89,8 +98,8 @@ export async function archiveNote(note: Note) {
     //todo
 }
 
-export async function deleteNote(note: Note): Promise<string> {
-    const filePath = getFilePath(note); 
+export async function deleteNote(name: string, folders: string[]): Promise<string> {
+    const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
         throw new Error("Note not found.");
@@ -124,9 +133,8 @@ function ensureDirExists(folders: string[]) {
     if (!existsSync(path)) mkdirSync(path, { recursive: true });
 }
 
-function getFilePath(note: Note): string {
-    const path = getPath(note.folders);
-    return join(path, getSafeString(note.name) + ".json");
+function getFilePath(name: string, folders: string[]): string {
+    return join(getPath(folders), getSafeString(name) + ".json");
 }
 
 function getPath(folders: string[]): string {
@@ -143,5 +151,9 @@ function getSafeStrings(strings: string[]): string[] {
 }
 
 function getSafeString(string: string): string {
-    return string.replace(/[^\w-]/g, "").slice(0, 50);
+    const safe = string.trim().replace(/\s+/g, "-").replace(/[^\w-]/g, "").slice(0, 50);
+    if (safe === "") {
+        throw new Error(`"${string}" has no valid characters. Use letters, digits, spaces, _ or -.`);
+    }
+    return safe;
 }

@@ -6,7 +6,7 @@ It runs over stdio or Streamable HTTP and is written in TypeScript.
 
 ## Tools
 
-Notes are stored as JSON files (`{ name, folders, writtenAt, body }`) under a base directory, organised in nested folders. Names and folder names are sanitised to letters, digits, `_` and `-` and truncated to 50 characters.
+Notes are stored as JSON files (`{ name, folders, writtenAt, body }`) under a base directory, organised in nested folders. Names and folder names are sanitised to letters, digits, `_` and `-` (whitespace becomes `-`) and truncated to 50 characters; a name with no valid characters is rejected. `create_note` fails if the note already exists.
 
 | Tool | Inputs | Description |
 | --- | --- | --- |
@@ -23,11 +23,11 @@ Not implemented yet: moving, renaming and archiving notes.
 
 ### Storage location
 
-The base directory is hard-coded as `BASE_PATH` in [src/note.ts](src/note.ts). Change it to where you want your notes stored, then rebuild.
+The base directory is read from `NOTES_DIR`. Copy [.env.example](.env.example) to `.env` in the project root and set it to where you want your notes stored. A real environment variable also works. The server refuses to start without it.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 20.12 or newer
 - npm
 
 ## Setup

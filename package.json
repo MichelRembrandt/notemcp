@@ -1,8 +1,8 @@
 {
   "name": "notemcp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "MCP server for creating, reading, editing and deleting notes",
+  "main": "build/index.js",
   "scripts": {
     "build": "tsc",
     "start:http": "tsx src/http.ts"
@@ -23,7 +23,7 @@
     "typescript": "^7.0.2"
   },
   "bin": {
-    "task-server": "./build/index.js"
+    "notemcp": "./build/index.js"
   },
   "files": [
     "build"
