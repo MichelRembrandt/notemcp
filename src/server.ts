@@ -29,7 +29,7 @@ export function buildServer() {
             const response = await createNote(note);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );
@@ -48,7 +48,7 @@ export function buildServer() {
             const response = await readNote(note);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );
@@ -65,7 +65,7 @@ export function buildServer() {
             const response = await readFolder(folders);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );
@@ -85,7 +85,7 @@ export function buildServer() {
             const response = await editNote(note);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );
@@ -104,7 +104,7 @@ export function buildServer() {
             const response = await deleteNote(note);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );
@@ -122,7 +122,7 @@ export function buildServer() {
             const response = await deleteFolder(folders, recursive);
 
             return {
-                content: [{ type: 'text', text: JSON.stringify(response) }]
+                content: [{ type: 'text', text: response }]
             };
         }
     );

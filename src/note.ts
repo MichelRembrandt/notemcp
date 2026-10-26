@@ -12,8 +12,8 @@ interface Note {
 
 export function toNote(name: string, folders: string[], body: string = "n/a"): Note {
     return {
-        name: name,
-        folders: folders,
+        name: getSafeString(name),
+        folders: getSafeStrings(folders),
         writtenAt: new Date().toISOString(),
         body: body
     };
@@ -33,12 +33,10 @@ export async function readNote(note: Note): Promise<string> {
     if (!existsSync(filePath)) {
         throw new Error("Note not found")
     }
-    return JSON.parse(readFileSync(filePath, "utf-8"));
+    return readFileSync(filePath, "utf-8");
 }
 
 export async function readFolder(folders: string[]): Promise<string> {
-
-    //todo: 1 remove file extention from note names, 2. add tree support
 
     const path = getPath(folders);
 
@@ -46,27 +44,27 @@ export async function readFolder(folders: string[]): Promise<string> {
         throw new Error("Folder not found.");
     }
 
-    const entries = readdirSync(path, { withFileTypes: true });
+    return JSON.stringify(readFolderTree(path), null, 2);
+}
 
-    let foundFolders = [];
-    let foundNotes = [];
-    
-    for (const entry of entries ) {
+interface FolderTree {
+    folders: { [name: string]: FolderTree };
+    notes: string[];
+}
 
+function readFolderTree(path: string): FolderTree {
+    const tree: FolderTree = { folders: {}, notes: [] };
+
+    for (const entry of readdirSync(path, { withFileTypes: true })) {
         if (entry.isDirectory()) {
-            foundFolders.push(entry.name);
+            tree.folders[entry.name] = readFolderTree(join(path, entry.name));
         }
         if (entry.isFile()) {
-            foundNotes.push(entry.name);
+            tree.notes.push(entry.name.replace(/\.json$/, ""));
         }
     }
 
-    const result = {
-        folders: foundFolders,
-        notes: foundNotes
-    };
-
-    return JSON.stringify(result, null, 2);
+    return tree;
 }
 
 export async function editNote(note: Note): Promise<string> {
@@ -76,7 +74,7 @@ export async function editNote(note: Note): Promise<string> {
         throw new Error("Note not found. (To change the location of a note use move_note. To change the name of a note use rename_note)");
     }
 
-    const oldNote = JSON.parse(readFileSync(filePath, "utf-8"));
+    const oldNote = readFileSync(filePath, "utf-8");
 
     writeFileSync(filePath, JSON.stringify(note, null, 2));
 
@@ -97,7 +95,7 @@ export async function deleteNote(note: Note): Promise<string> {
     if (!existsSync(filePath)) {
         throw new Error("Note not found.");
     }
-    const oldNote = JSON.parse(readFileSync(filePath, "utf-8"));
+    const oldNote = readFileSync(filePath, "utf-8");
     rmSync(filePath);
     return "Deleted the following note: " + oldNote;
 }
