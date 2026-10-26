@@ -1,5 +1,11 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ENV_PATH = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
+if (existsSync(ENV_PATH)) {
+    process.loadEnvFile(ENV_PATH);
+}
 
 if (!process.env.NOTES_DIR) {
     throw new Error("NOTES_DIR is not set. Copy .env.example to .env and set it.");
@@ -7,32 +13,15 @@ if (!process.env.NOTES_DIR) {
 
 const BASE_PATH: string = process.env.NOTES_DIR;
 
-interface Note {
-    name: string;
-    folders: string[];
-    writtenAt: string;
-    body: string;
-}
-
-export function toNote(name: string, folders: string[], body: string): Note {
-    return {
-        name: getSafeString(name),
-        folders: getSafeStrings(folders),
-        writtenAt: new Date().toISOString(),
-        body: body
-    };
-}
-
-export async function createNote(note: Note) {
-    ensureDirExists(note.folders);
-    const filePath = getFilePath(note.name, note.folders);
+export async function createNote(name: string, folders: string[], body: string) {
+    ensureDirExists(folders);
+    const filePath = getFilePath(name, folders);
 
     if (existsSync(filePath)) {
         throw new Error("Note already exists. Use edit_note to change it.");
     }
-    const jsonNote = JSON.stringify(note, null, 2);
-    writeFileSync(filePath, jsonNote);
-    return "Created note: " + jsonNote;
+    writeFileSync(filePath, body);
+    return "Created note: " + body;
 }
 
 export async function readNote(name: string, folders: string[]): Promise<string> {
@@ -68,16 +57,16 @@ function readFolderTree(path: string): FolderTree {
         if (entry.isDirectory()) {
             tree.folders[entry.name] = readFolderTree(join(path, entry.name));
         }
-        if (entry.isFile() && entry.name.endsWith(".json")) {
-            tree.notes.push(entry.name.replace(/\.json$/, ""));
+        if (entry.isFile() && entry.name.endsWith(".txt")) {
+            tree.notes.push(entry.name.replace(/\.txt$/, ""));
         }
     }
 
     return tree;
 }
 
-export async function editNote(note: Note): Promise<string> {
-    const filePath = getFilePath(note.name, note.folders);
+export async function editNote(name: string, folders: string[], body: string): Promise<string> {
+    const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
         throw new Error("Note not found. (To change the location of a note use move_note. To change the name of a note use rename_note)");
@@ -85,16 +74,16 @@ export async function editNote(note: Note): Promise<string> {
 
     const oldNote = readFileSync(filePath, "utf-8");
 
-    writeFileSync(filePath, JSON.stringify(note, null, 2));
+    writeFileSync(filePath, body);
 
     return "Note edited. Old note was: " + oldNote;
 }
 
-export async function moveNote(note: Note) {
+export async function moveNote() {
     //todo
 }
 
-export async function archiveNote(note: Note) {
+export async function archiveNote() {
     //todo
 }
 
@@ -134,20 +123,11 @@ function ensureDirExists(folders: string[]) {
 }
 
 function getFilePath(name: string, folders: string[]): string {
-    return join(getPath(folders), getSafeString(name) + ".json");
+    return join(getPath(folders), getSafeString(name) + ".txt");
 }
 
 function getPath(folders: string[]): string {
-    const path = getSafeStrings(folders).join("/");
-    return join(BASE_PATH, "/", path);
-}
-
-function getSafeStrings(strings: string[]): string[] {
-    let safe = [];
-    for (const string of strings) {
-        safe.push(getSafeString(string));
-    }
-    return safe;
+    return join(BASE_PATH, ...folders.map(getSafeString));
 }
 
 function getSafeString(string: string): string {

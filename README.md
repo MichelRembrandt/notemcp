@@ -6,7 +6,7 @@ It runs over stdio or Streamable HTTP and is written in TypeScript.
 
 ## Tools
 
-Notes are stored as JSON files (`{ name, folders, writtenAt, body }`) under a base directory, organised in nested folders. Names and folder names are sanitised to letters, digits, `_` and `-` (whitespace becomes `-`) and truncated to 50 characters; a name with no valid characters is rejected. `create_note` fails if the note already exists.
+Notes are stored as plain text files (`<name>.txt`, containing just the note text) under a base directory, organised in nested folders. Names and folder names are sanitised to letters, digits, `_` and `-` (whitespace becomes `-`) and truncated to 50 characters; a name with no valid characters is rejected. `create_note` fails if the note already exists.
 
 | Tool | Inputs | Description |
 | --- | --- | --- |
@@ -103,7 +103,7 @@ src/
   index.ts    # Entry point: connects the server to a stdio transport
   http.ts     # Entry point: serves the MCP server over Streamable HTTP (Express)
   server.ts   # Builds the MCP server and registers the tools
-  note.ts     # Note storage: create, read, edit and delete notes as JSON files
+  note.ts     # Note storage: create, read, edit and delete notes as plain text files
 ```
 
 ## Notes

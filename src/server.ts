@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { toNote, createNote, readNote, readFolder, editNote, deleteNote, deleteFolder } from './note.js';
+import { createNote, readNote, readFolder, editNote, deleteNote, deleteFolder } from './note.js';
 
 const name = z.string().min(1).max(50).describe("Title of the note");
 const folderEntry = z.string().min(1).max(50).describe("Folder in which the note should be stored.");
@@ -18,7 +18,7 @@ export function buildServer() {
     server.registerTool(
         'create_note',
         { title: 'Create a new note', inputSchema: { name, folders, body } },
-        async (args) => text(await createNote(toNote(args.name, args.folders, args.body)))
+        async (args) => text(await createNote(args.name, args.folders, args.body))
     );
 
     server.registerTool(
@@ -36,7 +36,7 @@ export function buildServer() {
     server.registerTool(
         'edit_note',
         { title: 'Edit an existing note', inputSchema: { name, folders, body } },
-        async (args) => text(await editNote(toNote(args.name, args.folders, args.body)))
+        async (args) => text(await editNote(args.name, args.folders, args.body))
     );
 
     server.registerTool(
