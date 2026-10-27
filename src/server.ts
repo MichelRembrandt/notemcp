@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { createNote, readNote, readFolder, editNote, moveNote, archiveNote, deleteNote, deleteFolder } from './note.js';
+import { createNote, readNote, readFolder, editNote, moveNote, renameNote, archiveNote, deleteNote, deleteFolder } from './note.js';
 
 const name = z.string().min(1).max(50).describe("Title of the note");
 const folderEntry = z.string().min(1).max(50).describe("Folder in which the note should be stored.");
@@ -46,6 +46,15 @@ export function buildServer() {
             inputSchema: { name, folders, newFolders: folders.describe("Path of the destination folders. An empty list moves the note to the root.") }
         },
         async (args) => text(moveNote(args.name, args.folders, args.newFolders))
+    );
+
+    server.registerTool(
+        "rename_note",
+        {
+            title: "Rename an existing note",
+            inputSchema: { name, folders, newName: name.describe("New title of the note") }
+        },
+        async (args) => text(renameNote(args.name, args.folders, args.newName))
     );
 
     server.registerTool(

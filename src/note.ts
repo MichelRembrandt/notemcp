@@ -96,6 +96,21 @@ export function moveNote(name: string, folders: string[], newFolders: string[]):
     return `Moved note from ${folders.join("/") || "/"} to ${newFolders.join("/") || "/"}`;
 }
 
+export function renameNote(name: string, folders: string[], newName: string): string {
+    const oldPath = getFilePath(name, folders);
+    const newPath = getFilePath(newName, folders);
+
+    if (!existsSync(oldPath)) {
+        throw new Error("Note not found.");
+    }
+    if (existsSync(newPath)) {
+        throw new Error("A note with the new name already exists in this folder.");
+    }
+
+    renameSync(oldPath, newPath);
+    return `Renamed note from ${name} to ${newName}`;
+}
+
 export function archiveNote(name: string, folders: string[]): string {
     const oldPath = getFilePath(name, folders);
     const archiveFolders = ["archive", ...folders];

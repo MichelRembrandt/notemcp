@@ -1,6 +1,6 @@
 # notemcp
 
-A small [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets an MCP client such as Claude create, read, edit and delete notes.
+A small [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that lets an MCP client such as Claude create, read, edit, move, rename, archive and delete notes.
 
 It runs over stdio or Streamable HTTP and is written in TypeScript.
 
@@ -12,14 +12,15 @@ Notes are stored as plain text files (`<name>.txt`, containing just the note tex
 | --- | --- | --- |
 | `create_note` | `name`, `folders`, `body` | Create a new note, creating the folders if needed. |
 | `read_note` | `name`, `folders` | Read an existing note. |
-| `read_folder` | `folders` | List the subfolders and notes in a folder. |
+| `read_folder` | `folders` | Recursively list the subfolders and notes in a folder, returned as a JSON tree (`{ folders: { name: {...} }, notes: [...] }`). |
 | `edit_note` | `name`, `folders`, `body` | Replace the body of an existing note. |
+| `move_note` | `name`, `folders`, `newFolders` | Move a note to another folder, creating the destination folders if needed. An empty `newFolders` moves it to the root. Fails if a note with that name already exists there. |
+| `rename_note` | `name`, `folders`, `newName` | Rename a note within its folder. Fails if a note with the new name already exists. |
+| `archive_note` | `name`, `folders` | Move a note into the `archive` folder, keeping its folder structure (`a/b/note` becomes `archive/a/b/note`). Fails if it is already archived. |
 | `delete_note` | `name`, `folders` | Delete an existing note. |
-| `delete_folder` | `folders`, `recursive` | Delete a folder. With `recursive` false it only deletes an empty folder; with true it also deletes everything inside. The root folder cannot be deleted. |
+| `delete_folder` | `folders`, `recursive` | Delete a folder. With `recursive` false it only deletes an empty folder; with true it also deletes everything inside. `folders` must not be empty, so the root folder cannot be deleted. |
 
 `folders` is a path of up to 5 folder names; each entry is nested in the previous one. Use an empty list for the root.
-
-Not implemented yet: moving, renaming and archiving notes.
 
 ### Storage location
 
@@ -103,7 +104,7 @@ src/
   index.ts    # Entry point: connects the server to a stdio transport
   http.ts     # Entry point: serves the MCP server over Streamable HTTP (Express)
   server.ts   # Builds the MCP server and registers the tools
-  note.ts     # Note storage: create, read, edit and delete notes as plain text files
+  note.ts     # Note storage: create, read, edit, move, rename, archive and delete notes as plain text files
 ```
 
 ## Notes
