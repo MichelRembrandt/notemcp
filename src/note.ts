@@ -13,18 +13,19 @@ if (!process.env.NOTES_DIR) {
 
 const BASE_PATH: string = process.env.NOTES_DIR;
 
-export async function createNote(name: string, folders: string[], body: string) {
+export function createNote(name: string, folders: string[], body: string) {
     ensureDirExists(folders);
     const filePath = getFilePath(name, folders);
 
     if (existsSync(filePath)) {
         throw new Error("Note already exists. Use edit_note to change it.");
     }
+    
     writeFileSync(filePath, body);
     return "Created note: " + body;
 }
 
-export async function readNote(name: string, folders: string[]): Promise<string> {
+export function readNote(name: string, folders: string[]): string {
     const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
@@ -33,7 +34,7 @@ export async function readNote(name: string, folders: string[]): Promise<string>
     return readFileSync(filePath, "utf-8");
 }
 
-export async function readFolder(folders: string[]): Promise<string> {
+export function readFolder(folders: string[]): string {
 
     const path = getPath(folders);
 
@@ -65,7 +66,7 @@ function readFolderTree(path: string): FolderTree {
     return tree;
 }
 
-export async function editNote(name: string, folders: string[], body: string): Promise<string> {
+export function editNote(name: string, folders: string[], body: string): string {
     const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
@@ -79,15 +80,15 @@ export async function editNote(name: string, folders: string[], body: string): P
     return "Note edited. Old note was: " + oldNote;
 }
 
-export async function moveNote() {
+export function moveNote() {
     //todo
 }
 
-export async function archiveNote() {
+export function archiveNote() {
     //todo
 }
 
-export async function deleteNote(name: string, folders: string[]): Promise<string> {
+export function deleteNote(name: string, folders: string[]): string {
     const filePath = getFilePath(name, folders);
 
     if (!existsSync(filePath)) {
@@ -98,7 +99,7 @@ export async function deleteNote(name: string, folders: string[]): Promise<strin
     return "Deleted the following note: " + oldNote;
 }
 
-export async function deleteFolder(folders: string[], recursive: boolean): Promise<string> {
+export function deleteFolder(folders: string[], recursive: boolean): string {
     if (folders.length === 0) {
         throw new Error("Provide the folders you want to delete.");
     }
